@@ -22,12 +22,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
     $nome = $_POST['nome'];
     $preco_unitario = $_POST['preco_unitario'];
-    $unidade_medida = $_POST['unidade_medida'];
+    $quantidade_medida = $_POST['quantidade_medida'];
     $categoria = $_POST['categoria'];
     $id_fornecedor = $_POST['id_fornecedor'];
     $email_cadastro = $_POST['email_cadastro'];
 
-    if (empty($nome) || empty($preco_unitario) || empty($unidade_medida) || empty($categoria) || empty($id_fornecedor) || empty($email_cadastro)) 
+    if (empty($nome) || empty($preco_unitario) || empty($quantidade_medida) || empty($categoria) || empty($id_fornecedor) || empty($email_cadastro)) 
     {
         $mensagem = "Todos os campos são obrigatórios!";
     } 
@@ -35,13 +35,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     {
         try 
         {
-            $stmt = $pdo->prepare("INSERT INTO item (nome, preco_unitario, unidade_medida, categoria, id_fornecedor, email_cadastro) 
-                VALUES (:nome, :preco_unitario, :unidade_medida, :categoria, :id_fornecedor, :email_cadastro)");
+            $stmt = $pdo->prepare("INSERT INTO item (nome, preco_unitario, quantidade_medida, id_categoria, id_subcategoria, id_fornecedor, email_cadastro, id_medida) 
+                VALUES (:nome, :preco_unitario, :quantidade_medida, :categoria, :subcategoria, :id_fornecedor, :email_cadastro, :id_medida)");
 
             $stmt->bindParam(":nome", $nome);
             $stmt->bindParam(":preco_unitario", $preco_unitario);
-            $stmt->bindParam(":unidade_medida", $unidade_medida);
-            $stmt->bindParam(":categoria", $categoria);
+            $stmt->bindParam(":quantidade_medida", $quantidade_medida);
+            $stmt->bindParam(":id_categoria", $categoria);
+            $stmt->bindParam(":id_subcategoria", $subcategoria);
+            $stmt->bindParam(":id_medida", $medida);
             $stmt->bindParam(":id_fornecedor", $id_fornecedor);
             $stmt->bindParam(":email_cadastro", $email_cadastro);
             $stmt->execute();
@@ -103,8 +105,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
                             <input type="number" step="0.01" class="form-control" id="preco_unitario" name="preco_unitario" required>
                         </div>
                         <div class="form-group">
-                            <label for="unidade_medida">Unidade de Medida</label>
-                            <input type="text" class="form-control" id="unidade_medida" name="unidade_medida" required>
+                            <label for="quantidade_medida">Unidade de Medida</label>
+                            <input type="text" class="form-control" id="quantidade_medida" name="quantidade_medida" required>
                         </div>
                         <div class="form-group">
                             <label for="categoria">Categoria</label>

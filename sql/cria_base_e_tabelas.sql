@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS estoque_db;
-USE estoque_db;
+CREATE DATABASE IF NOT EXISTS stockbite;
+USE stockbite;
  
 -- Criando tabelas caso não existam
 CREATE TABLE IF NOT EXISTS unidades_medida (
@@ -40,9 +40,12 @@ CREATE TABLE IF NOT EXISTS item (
     ID INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(255) NOT NULL,
     preco_unitario FLOAT NOT NULL,
-    unidade_medida INT,
+    quantidade_medida INT,
     id_fornecedor INT,
-    email_cadastro VARCHAR(255)
+    email_cadastro VARCHAR(255),
+    id_categoria INT,
+    id_subcategoria INT,
+    id_medida INT
 );
  
 CREATE TABLE IF NOT EXISTS estoque (
@@ -79,7 +82,9 @@ ADD CONSTRAINT fk_categoria_pai FOREIGN KEY (id_pai) REFERENCES categoria(ID) ON
 ALTER TABLE item
 ADD CONSTRAINT fk_item_unidade FOREIGN KEY (unidade_medida) REFERENCES unidades_medida(ID) ON DELETE SET NULL,
 ADD CONSTRAINT fk_item_fornecedor FOREIGN KEY (id_fornecedor) REFERENCES fornecedor(ID) ON DELETE SET NULL,
-ADD CONSTRAINT fk_item_usuario FOREIGN KEY (email_cadastro) REFERENCES usuario(email) ON DELETE SET NULL;
+ADD CONSTRAINT fk_item_usuario FOREIGN KEY (id_categoria) REFERENCES categoria(ID) ON DELETE SET NULL;
+ADD CONSTRAINT fk_item_subcategoria FOREIGN KEY (id_subcategoria) REFERENCES categoria(ID) ON DELETE SET NULL,
+ADD CONSTRAINT fk_item_medida FOREIGN KEY (id_medida) REFERENCES unidades_medida(ID) ON DELETE SET NULL;
  
 ALTER TABLE estoque
 ADD CONSTRAINT fk_estoque_item FOREIGN KEY (id_item) REFERENCES item(ID) ON DELETE CASCADE,
