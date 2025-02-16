@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     {
         try 
         {
-            $stmt = $pdo->prepare("INSERT INTO itens (nome, preco_unitario, unidade_medida, categoria, id_fornecedor, email_cadastro) 
+            $stmt = $pdo->prepare("INSERT INTO item (nome, preco_unitario, unidade_medida, categoria, id_fornecedor, email_cadastro) 
                 VALUES (:nome, :preco_unitario, :unidade_medida, :categoria, :id_fornecedor, :email_cadastro)");
 
             $stmt->bindParam(":nome", $nome);
@@ -63,8 +63,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro de Produto</title>
-    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/sb-admin-2.min.css" rel="stylesheet">
 </head>
 <body id="page-top">
     <div id="wrapper">
