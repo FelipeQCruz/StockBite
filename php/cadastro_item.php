@@ -17,17 +17,50 @@ catch (PDOException $e)
     die("Erro ao conectar ao banco de dados: " . $e->getMessage());
 }
 
+$conn = new mysqli($host, $dbUsername, $dbPassword, $dbName);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Fetch categories (id_pai IS NULL)
+$query = "SELECT ID, nome FROM categoria WHERE id_pai IS NULL";
+$result = $conn->query($query);
+$categorias = [];
+while ($row = $result->fetch_assoc()) {
+    $categorias[$row['ID']] = $row['nome'];
+}
+
+// Fetch subcategories (id_pai IS NOT NULL)
+$query = "SELECT ID, nome, id_pai FROM categoria WHERE id_pai IS NOT NULL";
+$result = $conn->query($query);
+$subcategorias = [];
+while ($row = $result->fetch_assoc()) {
+    $subcategorias[$row['id_pai']][] = ['ID' => $row['ID'], 'nome' => $row['nome']];
+}
+
+// Fetch unidades de medida
+$query = "SELECT ID, nome FROM unidades_medida";
+$result = $conn->query($query);
+$unidades_medida = [];
+while ($row = $result->fetch_assoc()) { // Corrigido: $result_medida em vez de $result
+    $unidades_medida[$row['ID']] = $row['nome'];
+}
+
+
 // Processamento do formulário
 if ($_SERVER["REQUEST_METHOD"] == "POST") 
 {
     $nome = $_POST['nome'];
     $preco_unitario = $_POST['preco_unitario'];
-    $unidade_medida = $_POST['unidade_medida'];
+    $quantidade_medida = $_POST['quantidade_medida'];
     $categoria = $_POST['categoria'];
     $id_fornecedor = $_POST['id_fornecedor'];
     $email_cadastro = $_POST['email_cadastro'];
+    $subcategoria = $_POST['subcategoria'];
+    $medida = $_POST['medida'];
 
-    if (empty($nome) || empty($preco_unitario) || empty($unidade_medida) || empty($categoria) || empty($id_fornecedor) || empty($email_cadastro)) 
+
+    if (empty($nome) || empty($preco_unitario) || empty($quantidade_medida) || empty($categoria) || empty($id_fornecedor) || empty($email_cadastro)) 
     {
         $mensagem = "Todos os campos são obrigatórios!";
     } 
@@ -35,19 +68,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     {
         try 
         {
-            $stmt = $pdo->prepare("INSERT INTO item (nome, preco_unitario, unidade_medida, categoria, id_fornecedor, email_cadastro) 
-                VALUES (:nome, :preco_unitario, :unidade_medida, :categoria, :id_fornecedor, :email_cadastro)");
+            $stmt = $pdo->prepare("INSERT INTO item (nome, preco_unitario, quantidade_medida, id_categoria, id_subcategoria, id_fornecedor, email_cadastro, id_medida) 
+                VALUES (:nome, :preco_unitario, :quantidade_medida, :id_categoria, :id_subcategoria, :id_fornecedor, :email_cadastro, :id_medida)");
 
             $stmt->bindParam(":nome", $nome);
             $stmt->bindParam(":preco_unitario", $preco_unitario);
-            $stmt->bindParam(":unidade_medida", $unidade_medida);
-            $stmt->bindParam(":categoria", $categoria);
+            $stmt->bindParam(":quantidade_medida", $quantidade_medida);
+            $stmt->bindParam(":id_categoria", $categoria);
+            $stmt->bindParam(":id_subcategoria", $subcategoria);
+            $stmt->bindParam(":id_medida", $medida);
             $stmt->bindParam(":id_fornecedor", $id_fornecedor);
             $stmt->bindParam(":email_cadastro", $email_cadastro);
             $stmt->execute();
 
-            $mensagem = "Item cadastrado com sucesso!";
-        } 
+            
+            // Exibir popup antes do redirecionamento
+            echo 
+                "<script>
+                alert('Item cadastrado com sucesso!');
+                window.location.href = '" . $_SERVER['PHP_SELF'] . "';
+            </script>";
+            exit();
+        }
         catch (PDOException $e) 
         {
             $mensagem = "Erro ao cadastrar item: " . $e->getMessage();
@@ -55,6 +97,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     }
 }
 ?>
+
+<script>
+    // Javascripr para desabilitar subcategoria enquanto categoria não está selecionado
+document.addEventListener("DOMContentLoaded", function() {
+    let categoriaSelect = document.querySelector("select[name='categoria']");
+    let subcategoriaSelect = document.querySelector("select[name='subcategoria']");
+    
+    // Iniciar com subcategoria desabilitada
+    subcategoriaSelect.disabled = true;
+
+    // Monitorar mudanças no campo de categoria
+    categoriaSelect.addEventListener("change", function() {
+        if (this.value === "") {
+            subcategoriaSelect.disabled = true;
+            subcategoriaSelect.value = ""; // Resetar seleção
+        } else {
+            subcategoriaSelect.disabled = false;
+        }
+    });
+});
+</script>
 
 
 <!DOCTYPE html>
@@ -102,13 +165,57 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
                             <label for="preco_unitario">Preço Unitário</label>
                             <input type="number" step="0.01" class="form-control" id="preco_unitario" name="preco_unitario" required>
                         </div>
+
+                        <label for="medida">Unidade de medida:</label>
+                            <select id="medida" name="medida" class="form-control" required>
+                                <option value="">Selecione uma opção</option>
+                                <?php foreach ($unidades_medida as $id => $nome) { ?>                                    
+                                    <option value="<?= $id ?>"><?= $nome ?></option>                                    
+                                <?php } ?>
+                            </select>
+                            <script>
+                                let unidades_medida = <?php echo json_encode($unidades_medida); ?>;
+                                document.getElementById('medida').addEventListener('change', function() {
+                                    let unidadeId = this.value;
+                                });
+                            </script>
                         <div class="form-group">
-                            <label for="unidade_medida">Unidade de Medida</label>
-                            <input type="text" class="form-control" id="unidade_medida" name="unidade_medida" required>
+                            <label for="quantidade_medida">Unidade de Medida</label>
+                            <input type="text" class="form-control" id="quantidade_medida" name="quantidade_medida" required>
                         </div>
                         <div class="form-group">
-                            <label for="categoria">Categoria</label>
-                            <input type="text" class="form-control" id="categoria" name="categoria" required>
+                        <label for="categoria">Categoria:</label>
+                            <select id="categoria" name="categoria" class="form-control" required>
+                                <option value="">Selecione uma categoria</option>
+                                <?php foreach ($categorias as $id => $nome) { ?>                                    
+                                    <option value="<?= $id ?>"><?= $nome ?></option>                                    
+                                <?php } ?>
+                            </select>
+
+                            <label for="subcategoria">Subcategoria:</label>
+                            <select id="subcategoria" name="subcategoria" class="form-control" required>
+                                <option value="">Selecione uma subcategoria</option>
+                                <?php foreach ($subcategorias as $id => $nome) { ?>                                    
+                                    <option value="<?= $id ?>"><?= $nome ?></option>                                    
+                                <?php } ?>
+                            </select>
+
+                            <script>
+                                let subcategorias = <?php echo json_encode($subcategorias); ?>;
+                                document.getElementById('categoria').addEventListener('change', function() {
+                                    let categoriaId = this.value;
+                                    let subcategoriaSelect = document.getElementById('subcategoria');
+                                    subcategoriaSelect.innerHTML = '<option value="">Selecione uma subcategoria</option>';
+                                    if (subcategorias[categoriaId]) {
+                                        subcategorias[categoriaId].forEach(sub => {
+                                            let option = document.createElement('option');
+                                            option.value = sub.ID;
+                                            option.textContent = sub.nome;
+                                            subcategoriaSelect.appendChild(option);
+                                        });
+                                    }
+                                });
+                            </script>
                         </div>
                         <div class="form-group">
                             <label for="id_fornecedor">ID do Fornecedor</label>
@@ -118,8 +225,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
                             <label for="email_cadastro">E-mail de Cadastro</label>
                             <input type="email" class="form-control" id="email_cadastro" name="email_cadastro" required>
                         </div>
-                        <button type="submit" class="btn btn-primary">Cadastrar Produto</button>
-                    </form>
+                        <button type="submit" class="btn btn-primary">Cadastrar Produto</button>                   
+
+</form>
                 </div>
             </div>
             <footer class="sticky-footer bg-white">
@@ -136,4 +244,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     <script src="js/sb-admin-2.min.js"></script>
 </body>
 </html>
-
