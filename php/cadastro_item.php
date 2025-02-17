@@ -98,6 +98,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 }
 ?>
 
+<script>
+    // Javascripr para desabilitar subcategoria enquanto categoria não está selecionado
+document.addEventListener("DOMContentLoaded", function() {
+    let categoriaSelect = document.querySelector("select[name='categoria']");
+    let subcategoriaSelect = document.querySelector("select[name='subcategoria']");
+    
+    // Iniciar com subcategoria desabilitada
+    subcategoriaSelect.disabled = true;
+
+    // Monitorar mudanças no campo de categoria
+    categoriaSelect.addEventListener("change", function() {
+        if (this.value === "") {
+            subcategoriaSelect.disabled = true;
+            subcategoriaSelect.value = ""; // Resetar seleção
+        } else {
+            subcategoriaSelect.disabled = false;
+        }
+    });
+});
+</script>
+
 
 <!DOCTYPE html>
 <html lang="pt-br">
