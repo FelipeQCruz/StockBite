@@ -57,6 +57,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     $categoria = $_POST['categoria'];
     $id_fornecedor = $_POST['id_fornecedor'];
     $email_cadastro = $_POST['email_cadastro'];
+    $subcategoria = isset($_POST['id_subcategoria']);
+    $medida = isset($_POST['id_medida']);
+
 
     if (empty($nome) || empty($preco_unitario) || empty($quantidade_medida) || empty($categoria) || empty($id_fornecedor) || empty($email_cadastro)) 
     {
@@ -79,8 +82,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
             $stmt->bindParam(":email_cadastro", $email_cadastro);
             $stmt->execute();
 
-            $mensagem = "Item cadastrado com sucesso!";
-        } 
+            
+            // Exibir popup antes do redirecionamento
+            echo 
+                "<script>
+                alert('Item cadastrado com sucesso!');
+                window.location.href = '" . $_SERVER['PHP_SELF'] . "';
+            </script>";
+            exit();
+        }
         catch (PDOException $e) 
         {
             $mensagem = "Erro ao cadastrar item: " . $e->getMessage();
