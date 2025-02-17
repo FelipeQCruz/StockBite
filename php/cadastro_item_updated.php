@@ -38,6 +38,16 @@ while ($row = $result->fetch_assoc()) {
     $subcategorias[$row['id_pai']][] = ['ID' => $row['ID'], 'nome' => $row['nome']];
 }
 
+// Fetch unidades de medida
+$query = "SELECT ID, nome FROM unidades_medida";
+$result_medida = $conn->query($query);
+$unidades_medida = [];
+
+while ($row = $result_medida->fetch_assoc()) { // Corrigido: $result_medida em vez de $result
+    $unidades_medida[$row['ID']] = $row['nome'];
+}
+
+
 // Processamento do formulário
 if ($_SERVER["REQUEST_METHOD"] == "POST") 
 {
@@ -125,6 +135,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
                             <label for="preco_unitario">Preço Unitário</label>
                             <input type="number" step="0.01" class="form-control" id="preco_unitario" name="preco_unitario" required>
                         </div>
+
+                        <label for="id_medida">Unidade de medida:</label>
+                            <select id="id_medida" name="id_medida" class="form-control" required>
+                                <option value="">Selecione uma opção</option>
+                                <?php foreach ($unidades_medida as $id => $nome) { ?>                                    
+                                    <option value="<?= $id ?>"><?= $nome ?></option>                                    
+                                <?php } ?>
+                            </select>
+                            <script>
+                                let unidades_medida = <?php echo json_encode($unidades_medida); ?>;
+                                document.getElementById('id_medida').addEventListener('change', function() {
+                                    let unidadeId = this.value;
+                                });
+                            </script>
                         <div class="form-group">
                             <label for="quantidade_medida">Unidade de Medida</label>
                             <input type="text" class="form-control" id="quantidade_medida" name="quantidade_medida" required>
