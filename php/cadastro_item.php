@@ -71,10 +71,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 
             $stmt->bindParam(":nome", $nome);
             $stmt->bindParam(":preco_unitario", $preco_unitario);
+            $stmt->bindParam(":id_medida", $unidades_medida);
             $stmt->bindParam(":quantidade_medida", $quantidade_medida);
-            $stmt->bindParam(":id_categoria", $categoria);
-            $stmt->bindParam(":id_subcategoria", $subcategoria);
-            $stmt->bindParam(":id_medida", $medida);
+            $stmt->bindParam(":categoria", $categoria);
+            $stmt->bindParam(":subcategoria", $subcategoria);
             $stmt->bindParam(":id_fornecedor", $id_fornecedor);
             $stmt->bindParam(":email_cadastro", $email_cadastro);
             $stmt->execute();
