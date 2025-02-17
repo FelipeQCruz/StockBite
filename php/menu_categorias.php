@@ -2,7 +2,7 @@
 // Conexão com o banco de dados
 $servername = "localhost";
 $username = "root";
-$password = "";
+$password = "27H09g94B*";
 $dbname = "estoque_db";
 
 $conn = new mysqli($servername, $username, $password, $dbname);

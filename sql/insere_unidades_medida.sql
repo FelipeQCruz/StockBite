@@ -1,16 +1,5 @@
 INSERT INTO unidades_medida (nome) VALUES
 ('Grama'),
 ('Quilograma'),
-('Mililitro'),
 ('Litro'),
-('Xícara'),
-('Colher de sopa'),
-('Colher de chá'),
-('Unidade'),
-('Fatia'),
-('Peça'),
-('Pacote'),
-('Lata'),
-('Vidro'),
-('Copo'),
-('Pitada');
+('Unidade');
