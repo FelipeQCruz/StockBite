@@ -40,10 +40,9 @@ while ($row = $result->fetch_assoc()) {
 
 // Fetch unidades de medida
 $query = "SELECT ID, nome FROM unidades_medida";
-$result_medida = $conn->query($query);
+$result = $conn->query($query);
 $unidades_medida = [];
-
-while ($row = $result_medida->fetch_assoc()) { // Corrigido: $result_medida em vez de $result
+while ($row = $result->fetch_assoc()) { // Corrigido: $result_medida em vez de $result
     $unidades_medida[$row['ID']] = $row['nome'];
 }
 
@@ -57,8 +56,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     $categoria = $_POST['categoria'];
     $id_fornecedor = $_POST['id_fornecedor'];
     $email_cadastro = $_POST['email_cadastro'];
-    $subcategoria = isset($_POST['id_subcategoria']);
-    $medida = isset($_POST['id_medida']);
+    $subcategoria = $_POST['id_subcategoria'];
+    $medida = $_POST['id_medida'];
 
 
     if (empty($nome) || empty($preco_unitario) || empty($quantidade_medida) || empty($categoria) || empty($id_fornecedor) || empty($email_cadastro)) 
@@ -175,6 +174,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
                             <label for="subcategoria">Subcategoria:</label>
                             <select id="subcategoria" name="subcategoria" class="form-control" required>
                                 <option value="">Selecione uma subcategoria</option>
+                                <?php foreach ($subcategorias as $id => $nome) { ?>                                    
+                                    <option value="<?= $id ?>"><?= $nome ?></option>                                    
+                                <?php } ?>
                             </select>
 
                             <script>
