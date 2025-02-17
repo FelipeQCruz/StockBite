@@ -56,8 +56,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     $categoria = $_POST['categoria'];
     $id_fornecedor = $_POST['id_fornecedor'];
     $email_cadastro = $_POST['email_cadastro'];
-    $subcategoria = $_POST['id_subcategoria'];
-    $medida = $_POST['id_medida'];
+    $subcategoria = $_POST['subcategoria'];
+    $medida = $_POST['medida'];
 
 
     if (empty($nome) || empty($preco_unitario) || empty($quantidade_medida) || empty($categoria) || empty($id_fornecedor) || empty($email_cadastro)) 
@@ -166,8 +166,8 @@ document.addEventListener("DOMContentLoaded", function() {
                             <input type="number" step="0.01" class="form-control" id="preco_unitario" name="preco_unitario" required>
                         </div>
 
-                        <label for="id_medida">Unidade de medida:</label>
-                            <select id="id_medida" name="id_medida" class="form-control" required>
+                        <label for="medida">Unidade de medida:</label>
+                            <select id="medida" name="medida" class="form-control" required>
                                 <option value="">Selecione uma opção</option>
                                 <?php foreach ($unidades_medida as $id => $nome) { ?>                                    
                                     <option value="<?= $id ?>"><?= $nome ?></option>                                    
@@ -175,7 +175,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             </select>
                             <script>
                                 let unidades_medida = <?php echo json_encode($unidades_medida); ?>;
-                                document.getElementById('id_medida').addEventListener('change', function() {
+                                document.getElementById('medida').addEventListener('change', function() {
                                     let unidadeId = this.value;
                                 });
                             </script>
