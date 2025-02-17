@@ -67,14 +67,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
         try 
         {
             $stmt = $pdo->prepare("INSERT INTO item (nome, preco_unitario, quantidade_medida, id_categoria, id_subcategoria, id_fornecedor, email_cadastro, id_medida) 
-                VALUES (:nome, :preco_unitario, :quantidade_medida, :categoria, :subcategoria, :id_fornecedor, :email_cadastro, :id_medida)");
+                VALUES (:nome, :preco_unitario, :quantidade_medida, :id_categoria, :id_subcategoria, :id_fornecedor, :email_cadastro, :id_medida)");
 
             $stmt->bindParam(":nome", $nome);
             $stmt->bindParam(":preco_unitario", $preco_unitario);
-            $stmt->bindParam(":id_medida", $unidades_medida);
             $stmt->bindParam(":quantidade_medida", $quantidade_medida);
-            $stmt->bindParam(":categoria", $categoria);
-            $stmt->bindParam(":subcategoria", $subcategoria);
+            $stmt->bindParam(":id_categoria", $categoria);
+            $stmt->bindParam(":id_subcategoria", $subcategoria);
+            $stmt->bindParam(":id_medida", $medida);
             $stmt->bindParam(":id_fornecedor", $id_fornecedor);
             $stmt->bindParam(":email_cadastro", $email_cadastro);
             $stmt->execute();
@@ -211,4 +211,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     <script src="js/sb-admin-2.min.js"></script>
 </body>
 </html>
-
