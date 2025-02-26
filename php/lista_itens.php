@@ -15,7 +15,7 @@ try {
     if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["id"])) {
         $id = intval($_POST["id"]);
         $updates = [];
-
+    
         if (isset($_POST["novo_preco"])) {
             $updates[] = "preco_unitario = " . floatval($_POST["novo_preco"]);
         }
@@ -23,34 +23,60 @@ try {
             $updates[] = "id_medida = " . intval($_POST["nova_medida"]);
         }
         if (isset($_POST["nova_categoria"])) {
-            $updates[] = "id_categoria = " . intval($_POST["nova_categoria"]);
+            $nova_categoria = intval($_POST["nova_categoria"]);
+            $updates[] = "id_categoria = $nova_categoria";
+    
+            // Resetar a subcategoria caso não pertença à nova categoria
+            if (isset($_POST["nova_subcategoria"])) {
+                $nova_subcategoria = intval($_POST["nova_subcategoria"]);
+    
+                // Verifica se a subcategoria pertence à categoria selecionada
+                $stmt = $pdo->prepare("SELECT ID FROM categoria WHERE ID = :subcategoria AND id_pai = :categoria");
+                $stmt->bindParam(":subcategoria", $nova_subcategoria);
+                $stmt->bindParam(":categoria", $nova_categoria);
+                $stmt->execute();
+    
+                if ($stmt->fetch()) {
+                    $updates[] = "id_subcategoria = $nova_subcategoria";
+                } else {
+                    $updates[] = "id_subcategoria = NULL"; // Resetar caso inválido
+                }
+            }
         }
+    
         if (isset($_POST["nova_quantidade"])) {
             $stmt = $pdo->prepare("UPDATE estoque SET quantidade = :quantidade WHERE id_item = :id");
             $stmt->bindParam(":quantidade", $_POST["nova_quantidade"]);
             $stmt->bindParam(":id", $id);
             $stmt->execute();
         }
-
+    
         if (!empty($updates)) {
             $query = "UPDATE item SET " . implode(", ", $updates) . " WHERE ID = :id";
             $stmt = $pdo->prepare($query);
             $stmt->bindParam(":id", $id);
             $stmt->execute();
         }
-
+    
         echo json_encode(["success" => true, "message" => "Item atualizado com sucesso!"]);
         exit();
     }
+    
 
     // Buscar unidades de medida
     $stmt = $pdo->query("SELECT * FROM unidades_medida");
     $medidas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Buscar apenas categorias principais (id_pai IS NULL)
+    // Buscar categorias principais
     $stmt = $pdo->query("SELECT * FROM categoria WHERE id_pai IS NULL");
     $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Buscar todas as subcategorias organizadas por categoria
+    $stmt = $pdo->query("SELECT * FROM categoria WHERE id_pai IS NOT NULL");
+    $subcategorias = [];
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $subcategorias[$row['id_pai']][] = ["ID" => $row["ID"], "nome" => $row["nome"]];
+    }
 
     // Buscar os itens do banco de dados
     $stmt = $pdo->query("
@@ -123,15 +149,26 @@ try {
                         <td><?= htmlspecialchars($item['cadastrado_por']) ?></td>
                         <td>
                             <span id="categoria-<?= $item['ID'] ?>"><?= htmlspecialchars($item['categoria']) ?></span>
-                            <select id="input-categoria-<?= $item['ID'] ?>" class="form-control d-none">
-                                <?php foreach ($categorias as $categoria): ?>
+                            <select id="input-categoria-<?= $item['ID'] ?>" class="form-control d-none" onchange="atualizarSubcategorias(<?= $item['ID'] ?>)">
+                            <?php foreach ($categorias as $categoria): ?>
                                     <option value="<?= $categoria['ID'] ?>" <?= $item['categoria_id'] == $categoria['ID'] ? 'selected' : '' ?>>
                                         <?= htmlspecialchars($categoria['nome']) ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
                         </td>
-                        <td><?= htmlspecialchars($item['subcategoria']) ?></td>
+                        <td>
+                            <span id="subcategoria-<?= $item['ID'] ?>"><?= htmlspecialchars($item['subcategoria']) ?></span>
+                            <select id="input-subcategoria-<?= $item['ID'] ?>" class="form-control d-none">
+                                <?php if (isset($subcategorias[$item['categoria_id']])): ?>
+                                    <?php foreach ($subcategorias[$item['categoria_id']] as $subcategoria): ?>
+                                        <option value="<?= $subcategoria['ID'] ?>" <?= ($item['subcategoria'] == $subcategoria['nome']) ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($subcategoria['nome']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </select>
+                        </td>
                         <td>
                             <span id="medida-<?= $item['ID'] ?>"><?= htmlspecialchars($item['medida']) ?></span>
                             <select id="input-medida-<?= $item['ID'] ?>" class="form-control d-none">
@@ -174,6 +211,25 @@ try {
             }, "json");
         }
 
+        let subcategoriasDisponiveis = <?php echo json_encode($subcategorias); ?>;
+
+function atualizarSubcategorias(id) {
+    let categoriaSelecionada = $("#input-categoria-" + id).val();
+    let subcategoriaSelect = $("#input-subcategoria-" + id);
+
+    // Limpa opções anteriores antes de carregar novas opções
+    subcategoriaSelect.empty().append('<option value="">Selecione uma subcategoria</option>').prop("disabled", true);
+
+    if (subcategoriasDisponiveis.hasOwnProperty(categoriaSelecionada)) {
+        subcategoriasDisponiveis[categoriaSelecionada].forEach(function (sub) {
+            subcategoriaSelect.append(`<option value="${sub.ID}">${sub.nome}</option>`);
+        });
+        subcategoriaSelect.prop("disabled", false);
+    }
+}
+
+
+
         function editarItem(id) {
             $("#preco-" + id).addClass("d-none");
             $("#input-preco-" + id).removeClass("d-none");
@@ -187,6 +243,9 @@ try {
             $("#quantidade-" + id).addClass("d-none");
             $("#input-quantidade-" + id).removeClass("d-none");
 
+            $("#subcategoria-" + id).addClass("d-none");
+            $("#input-subcategoria-" + id).removeClass("d-none");
+
             $("#editar-" + id).addClass("d-none");
             $("#salvar-" + id).removeClass("d-none");
             $("#cancelar-" + id).removeClass("d-none");
@@ -196,20 +255,29 @@ try {
             location.reload();
         }
 
-        function salvarAlteracoes(id) {
-            let data = {
-                id: id,
-                novo_preco: $("#input-preco-" + id).val(),
-                nova_medida: $("#input-medida-" + id).val(),
-                nova_categoria: $("#input-categoria-" + id).val(),
-                nova_quantidade: $("#input-quantidade-" + id).val()
-            };
 
-            $.post("lista_itens.php", data, function(response) {
-                alert(response.message);
-                location.reload();
-            }, "json");
-        }
+
+$(".categoria-select").change(function () {
+    let id = $(this).data("id");
+    atualizarSubcategorias(id);
+});
+
+function salvarAlteracoes(id) {
+    let data = {
+        id: id,
+        novo_preco: $("#input-preco-" + id).val(),
+        nova_medida: $("#input-medida-" + id).val(),
+        nova_categoria: $("#input-categoria-" + id).val(),
+        nova_subcategoria: $("#input-subcategoria-" + id).val(),
+        nova_quantidade: $("#input-quantidade-" + id).val()
+    };
+
+    $.post("lista_itens.php", data, function (response) {
+        alert(response.message);
+        location.reload();
+    }, "json");
+}
+
 
     </script>
 
