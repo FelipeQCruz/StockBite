@@ -11,12 +11,11 @@ try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbName;charset=utf8", $dbUsername, $dbPassword);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // **Corrigido: Verifica se a requisição é AJAX corretamente**
+    // Atualizar preço no banco de dados via AJAX
     if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["id"]) && isset($_POST["novo_preco"])) {
         $id = intval($_POST["id"]);
         $novoPreco = floatval($_POST["novo_preco"]);
 
-        // **Corrigido: Verifica se os valores não estão vazios**
         if ($id > 0 && $novoPreco > 0) {
             $stmt = $pdo->prepare("UPDATE item SET preco_unitario = :preco WHERE ID = :id");
             $stmt->bindParam(":preco", $novoPreco);
@@ -37,10 +36,27 @@ try {
     exit();
 }
 
-// Buscar os itens do banco de dados
-$stmt = $pdo->query("SELECT i.ID, i.nome, i.preco_unitario, c.nome as categoria 
-                     FROM item i
-                     LEFT JOIN categoria c ON i.id_categoria = c.ID");
+// Buscar os itens do banco de dados com os novos campos
+$stmt = $pdo->query("
+    SELECT 
+        i.ID, 
+        i.nome, 
+        i.preco_unitario, 
+        f.empresa AS fornecedor, 
+        u.nome AS cadastrado_por,
+        c.nome AS categoria, 
+        sc.nome AS subcategoria, 
+        um.nome AS medida, 
+        COALESCE(SUM(e.quantidade), 0) AS quantidade_atual
+    FROM item i
+    LEFT JOIN fornecedor f ON i.id_fornecedor = f.ID
+    LEFT JOIN usuario u ON i.email_cadastro = u.email
+    LEFT JOIN categoria c ON i.id_categoria = c.ID
+    LEFT JOIN categoria sc ON i.id_subcategoria = sc.ID
+    LEFT JOIN unidades_medida um ON i.id_medida = um.ID
+    LEFT JOIN estoque e ON i.ID = e.id_item
+    GROUP BY i.ID, i.nome, i.preco_unitario, f.empresa, u.nome, c.nome, sc.nome, um.nome
+");
 
 $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -50,7 +66,7 @@ $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro de Produto</title>
+    <title>Lista de Itens</title>
     <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/sb-admin-2.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -69,7 +85,12 @@ $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <th>ID</th>
                     <th>Nome</th>
                     <th>Preço Unitário</th>
+                    <th>Fornecedor</th>
+                    <th>Cadastrado Por</th>
                     <th>Categoria</th>
+                    <th>Subcategoria</th>
+                    <th>Medida</th>
+                    <th>Quantidade Atual</th>
                     <th>Ação</th>
                 </tr>
             </thead>
@@ -82,7 +103,12 @@ $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <span id="preco-<?= $item['ID'] ?>">R$ <?= number_format($item['preco_unitario'], 2, ',', '.') ?></span>
                             <input type="number" id="input-<?= $item['ID'] ?>" class="form-control d-none" value="<?= $item['preco_unitario'] ?>" step="0.01">
                         </td>
+                        <td><?= htmlspecialchars($item['fornecedor']) ?></td>
+                        <td><?= htmlspecialchars($item['cadastrado_por']) ?></td>
                         <td><?= htmlspecialchars($item['categoria']) ?></td>
+                        <td><?= htmlspecialchars($item['subcategoria']) ?></td>
+                        <td><?= htmlspecialchars($item['medida']) ?></td>
+                        <td><?= htmlspecialchars($item['quantidade_atual']) ?></td>
                         <td>
                             <button class="btn btn-primary btn-sm" id="editar-<?= $item['ID'] ?>" onclick="editarPreco(<?= $item['ID'] ?>)">Editar</button>
                             <button class="btn btn-success btn-sm d-none" id="salvar-<?= $item['ID'] ?>" onclick="salvarPreco(<?= $item['ID'] ?>)">Salvar</button>
@@ -130,13 +156,12 @@ $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             $("#alert-success").addClass("d-none");
                         }, 3000);
                     } else {
-                        console.error("Erro no PHP:", response.error);
                         alert("Erro ao atualizar preço!");
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error("Erro AJAX:", status, error);
                     alert("Erro na requisição! Veja o console para mais detalhes.");
+                    console.error("Erro AJAX:", status, error);
                 }
             });
         }
