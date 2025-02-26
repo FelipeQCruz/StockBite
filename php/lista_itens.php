@@ -11,7 +11,7 @@ try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbName;charset=utf8", $dbUsername, $dbPassword);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Atualizar preço, medida e quantidade via AJAX
+    // Atualizar preço, medida, quantidade e categoria via AJAX
     if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["id"])) {
         $id = intval($_POST["id"]);
         $updates = [];
@@ -21,6 +21,9 @@ try {
         }
         if (isset($_POST["nova_medida"])) {
             $updates[] = "id_medida = " . intval($_POST["nova_medida"]);
+        }
+        if (isset($_POST["nova_categoria"])) {
+            $updates[] = "id_categoria = " . intval($_POST["nova_categoria"]);
         }
         if (isset($_POST["nova_quantidade"])) {
             $stmt = $pdo->prepare("UPDATE estoque SET quantidade = :quantidade WHERE id_item = :id");
@@ -44,13 +47,18 @@ try {
     $stmt = $pdo->query("SELECT * FROM unidades_medida");
     $medidas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Buscar apenas categorias principais (id_pai IS NULL)
+    $stmt = $pdo->query("SELECT * FROM categoria WHERE id_pai IS NULL");
+    $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
     // Buscar os itens do banco de dados
     $stmt = $pdo->query("
         SELECT 
             i.ID, i.nome, i.preco_unitario, 
             f.empresa AS fornecedor, 
             u.nome AS cadastrado_por,
-            c.nome AS categoria, 
+            c.ID AS categoria_id, c.nome AS categoria, 
             sc.nome AS subcategoria, 
             um.ID AS medida_id, um.nome AS medida, 
             COALESCE(SUM(e.quantidade), 0) AS quantidade_atual
@@ -61,7 +69,7 @@ try {
         LEFT JOIN categoria sc ON i.id_subcategoria = sc.ID
         LEFT JOIN unidades_medida um ON i.id_medida = um.ID
         LEFT JOIN estoque e ON i.ID = e.id_item
-        GROUP BY i.ID, i.nome, i.preco_unitario, f.empresa, u.nome, c.nome, sc.nome, um.ID, um.nome
+        GROUP BY i.ID, i.nome, i.preco_unitario, f.empresa, u.nome, c.ID, c.nome, sc.nome, um.ID, um.nome
     ");
 
     $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -113,7 +121,16 @@ try {
                         </td>
                         <td><?= htmlspecialchars($item['fornecedor']) ?></td>
                         <td><?= htmlspecialchars($item['cadastrado_por']) ?></td>
-                        <td><?= htmlspecialchars($item['categoria']) ?></td>
+                        <td>
+                            <span id="categoria-<?= $item['ID'] ?>"><?= htmlspecialchars($item['categoria']) ?></span>
+                            <select id="input-categoria-<?= $item['ID'] ?>" class="form-control d-none">
+                                <?php foreach ($categorias as $categoria): ?>
+                                    <option value="<?= $categoria['ID'] ?>" <?= $item['categoria_id'] == $categoria['ID'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($categoria['nome']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </td>
                         <td><?= htmlspecialchars($item['subcategoria']) ?></td>
                         <td>
                             <span id="medida-<?= $item['ID'] ?>"><?= htmlspecialchars($item['medida']) ?></span>
@@ -133,6 +150,7 @@ try {
                             <button class="btn btn-primary btn-sm" id="editar-<?= $item['ID'] ?>" onclick="editarItem(<?= $item['ID'] ?>)">Editar</button>
                             <button class="btn btn-success btn-sm d-none" id="salvar-<?= $item['ID'] ?>" onclick="salvarAlteracoes(<?= $item['ID'] ?>)">Salvar</button>
                             <button class="btn btn-danger btn-sm d-none" id="cancelar-<?= $item['ID'] ?>" onclick="cancelarEdicao(<?= $item['ID'] ?>)">Cancelar</button>
+
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -141,12 +159,30 @@ try {
     </div>
 
     <script>
+        function salvarAlteracoes(id) {
+            let data = {
+                id: id,
+                novo_preco: $("#input-preco-" + id).val(),
+                nova_medida: $("#input-medida-" + id).val(),
+                nova_categoria: $("#input-categoria-" + id).val(),
+                nova_quantidade: $("#input-quantidade-" + id).val()
+            };
+
+            $.post("lista_itens.php", data, function(response) {
+                alert(response.message);
+                location.reload();
+            }, "json");
+        }
+
         function editarItem(id) {
             $("#preco-" + id).addClass("d-none");
             $("#input-preco-" + id).removeClass("d-none");
 
             $("#medida-" + id).addClass("d-none");
             $("#input-medida-" + id).removeClass("d-none");
+
+            $("#categoria-" + id).addClass("d-none");
+            $("#input-categoria-" + id).removeClass("d-none");
 
             $("#quantidade-" + id).addClass("d-none");
             $("#input-quantidade-" + id).removeClass("d-none");
@@ -165,6 +201,7 @@ try {
                 id: id,
                 novo_preco: $("#input-preco-" + id).val(),
                 nova_medida: $("#input-medida-" + id).val(),
+                nova_categoria: $("#input-categoria-" + id).val(),
                 nova_quantidade: $("#input-quantidade-" + id).val()
             };
 
@@ -173,6 +210,7 @@ try {
                 location.reload();
             }, "json");
         }
+
     </script>
 
 </body>
