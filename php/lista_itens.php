@@ -87,14 +87,13 @@ try {
             c.ID AS categoria_id, c.nome AS categoria, 
             sc.nome AS subcategoria, 
             um.ID AS medida_id, um.nome AS medida, 
-            COALESCE(SUM(e.quantidade), 0) AS quantidade_atual
+            COALESCE(SUM(i.quantidade_medida), 0) AS quantidade_atual
         FROM item i
         LEFT JOIN fornecedor f ON i.id_fornecedor = f.ID
         LEFT JOIN usuario u ON i.email_cadastro = u.email
         LEFT JOIN categoria c ON i.id_categoria = c.ID
         LEFT JOIN categoria sc ON i.id_subcategoria = sc.ID
         LEFT JOIN unidades_medida um ON i.id_medida = um.ID
-        LEFT JOIN estoque e ON i.ID = e.id_item
         GROUP BY i.ID, i.nome, i.preco_unitario, f.empresa, u.nome, c.ID, c.nome, sc.nome, um.ID, um.nome
     ");
 
@@ -330,7 +329,7 @@ try {
                                     <th>Categoria</th>
                                     <th>Subcategoria</th>
                                     <th>Medida</th>
-                                    <th>Quantidade Atual</th>
+                                    <th>Valor medida</th>
                                     <th>Ação</th>
                                 </tr>
                             </thead>

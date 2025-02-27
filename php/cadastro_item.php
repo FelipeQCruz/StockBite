@@ -180,7 +180,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 });
                             </script>
                         <div class="form-group">
-                            <label for="quantidade_medida">Unidade de Medida</label>
+                            <label for="quantidade_medida">Valor medida</label>
                             <input type="text" class="form-control" id="quantidade_medida" name="quantidade_medida" required>
                         </div>
                         <div class="form-group">
