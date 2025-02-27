@@ -87,8 +87,9 @@ try {
             sc.nome AS subcategoria, 
             um.ID AS medida_id, um.nome AS medida, 
             COALESCE(SUM(i.quantidade_medida), 0) AS quantidade_unitaria,
-            COALESCE(SUM(e.quantidade), 0) AS quantidade_estoque,
-            (COALESCE(SUM(e.quantidade), 0) * COALESCE(SUM(i.quantidade_medida), 0)) AS quantidade_total_estoque
+            COALESCE(SUM(e.quantidade), 0) AS unidades_estoque,
+            (COALESCE(SUM(e.quantidade), 0) * COALESCE(SUM(i.quantidade_medida), 0)) AS quantidade_total_estoque,
+            (COALESCE(SUM(e.quantidade), 0) * COALESCE(SUM(i.preco_unitario), 0)) AS valor_total_estoque
             FROM item i
             LEFT JOIN fornecedor f ON i.id_fornecedor = f.ID
             LEFT JOIN categoria c ON i.id_categoria = c.ID
@@ -317,7 +318,7 @@ try {
             <!-- DataTales Example -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">O total em estoque é a multiplicação das unidades em estoque com a quantidade unitária</h6>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive w-100">
@@ -325,12 +326,13 @@ try {
                             <thead>
                                 <tr>
                                     <th>Nome</th>
-                                    <th>Preço Unitário</th>
+                                    <th>Total em estoque</th>
+                                    <th>Medida</th>
+                                    <th>Unidades em estoque</th>
+                                    <th>Valor em estoque</th>
                                     <th>Fornecedor</th>
                                     <th>Categoria</th>
                                     <th>Subcategoria</th>
-                                    <th>Quantidade</th>
-                                    <th>Medida</th>
                                     <th>Ação</th>
                                 </tr>
                             </thead>
@@ -338,10 +340,12 @@ try {
                                 <?php foreach ($items as $item): ?>
                                     <tr id="row-<?= $item['ID'] ?>">
                                         <td><?= htmlspecialchars($item['nome']) ?></td>
-                                        <td>
-                                            <span id="preco-<?= $item['ID'] ?>">R$ <?= number_format($item['preco_unitario'], 2, ',', '.') ?></span>
-                                            <input type="number" id="input-preco-<?= $item['ID'] ?>" class="form-control d-none" value="<?= $item['preco_unitario'] ?>" step="0.01">
-                                        </td>
+                                        <td><?= htmlspecialchars($item['quantidade_total_estoque']) ?></td>
+                                        <td><?= htmlspecialchars($item['medida']) ?></td>
+                                        <td><?= htmlspecialchars($item['unidades_estoque']) ?></td>
+                                        <td><?= htmlspecialchars($item['categoria']) ?></td>
+                                        <td><?= htmlspecialchars($item['subcategoria']) ?></td>
+                                        <td><span id="preco-<?= $item['ID'] ?>">R$ <?= number_format($item['valor_total_estoque'], 2, ',', '.') ?></span></td>
                                         <td><?= htmlspecialchars($item['fornecedor']) ?></td>
                                         <td>
                                             <span id="categoria-<?= $item['ID'] ?>"><?= htmlspecialchars($item['categoria']) ?></span>
@@ -349,32 +353,6 @@ try {
                                                 <?php foreach ($categorias as $categoria): ?>
                                                     <option value="<?= $categoria['ID'] ?>" <?= $item['categoria_id'] == $categoria['ID'] ? 'selected' : '' ?>>
                                                         <?= htmlspecialchars($categoria['nome']) ?>
-                                                    </option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <span id="subcategoria-<?= $item['ID'] ?>"><?= htmlspecialchars($item['subcategoria']) ?></span>
-                                            <select id="input-subcategoria-<?= $item['ID'] ?>" class="form-control d-none">
-                                                <?php if (isset($subcategorias[$item['categoria_id']])): ?>
-                                                    <?php foreach ($subcategorias[$item['categoria_id']] as $subcategoria): ?>
-                                                        <option value="<?= $subcategoria['ID'] ?>" <?= ($item['subcategoria'] == $subcategoria['nome']) ? 'selected' : '' ?>>
-                                                            <?= htmlspecialchars($subcategoria['nome']) ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                <?php endif; ?>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <span id="quantidade-<?= $item['ID'] ?>"><?= htmlspecialchars($item['quantidade_unitaria']) ?></span>
-                                            <input type="number" id="input-quantidade-<?= $item['ID'] ?>" class="form-control d-none" value="<?= $item['quantidade_unitaria'] ?>">
-                                        </td>
-                                        <td>
-                                            <span id="medida-<?= $item['ID'] ?>"><?= htmlspecialchars($item['medida']) ?></span>
-                                            <select id="input-medida-<?= $item['ID'] ?>" class="form-control d-none">
-                                                <?php foreach ($medidas as $medida): ?>
-                                                    <option value="<?= $medida['ID'] ?>" <?= $item['medida_id'] == $medida['ID'] ? 'selected' : '' ?>>
-                                                        <?= htmlspecialchars($medida['nome']) ?>
                                                     </option>
                                                 <?php endforeach; ?>
                                             </select>
