@@ -329,7 +329,7 @@ try {
                                     <th>Categoria</th>
                                     <th>Subcategoria</th>
                                     <th>Medida</th>
-                                    <th>Valor medida</th>
+                                    <th>Quantidade</th>
                                     <th>Ação</th>
                                 </tr>
                             </thead>
