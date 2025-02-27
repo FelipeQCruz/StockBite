@@ -86,13 +86,17 @@ try {
             c.ID AS categoria_id, c.nome AS categoria, 
             sc.nome AS subcategoria, 
             um.ID AS medida_id, um.nome AS medida, 
-            COALESCE(SUM(i.quantidade_medida), 0) AS quantidade_atual
-        FROM item i
-        LEFT JOIN fornecedor f ON i.id_fornecedor = f.ID
-        LEFT JOIN categoria c ON i.id_categoria = c.ID
-        LEFT JOIN categoria sc ON i.id_subcategoria = sc.ID
-        LEFT JOIN unidades_medida um ON i.id_medida = um.ID
-        GROUP BY i.ID, i.nome, i.preco_unitario, f.empresa, c.ID, c.nome, sc.nome, um.ID, um.nome
+            COALESCE(SUM(i.quantidade_medida), 0) AS quantidade_unitaria,
+            COALESCE(SUM(e.quantidade), 0) AS quantidade_estoque,
+            (COALESCE(SUM(e.quantidade), 0) * COALESCE(SUM(i.quantidade_medida), 0)) AS quantidade_total_estoque
+            FROM item i
+            LEFT JOIN fornecedor f ON i.id_fornecedor = f.ID
+            LEFT JOIN categoria c ON i.id_categoria = c.ID
+            LEFT JOIN categoria sc ON i.id_subcategoria = sc.ID
+            LEFT JOIN unidades_medida um ON i.id_medida = um.ID
+            LEFT JOIN estoque e ON i.id = e.id_item
+            GROUP BY i.ID, i.nome, i.preco_unitario, f.empresa, c.ID, c.nome, sc.nome, um.ID, um.nome, e.quantidade;
+
     ");
 
     $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -362,8 +366,8 @@ try {
                                             </select>
                                         </td>
                                         <td>
-                                            <span id="quantidade-<?= $item['ID'] ?>"><?= htmlspecialchars($item['quantidade_atual']) ?></span>
-                                            <input type="number" id="input-quantidade-<?= $item['ID'] ?>" class="form-control d-none" value="<?= $item['quantidade_atual'] ?>">
+                                            <span id="quantidade-<?= $item['ID'] ?>"><?= htmlspecialchars($item['quantidade_unitaria']) ?></span>
+                                            <input type="number" id="input-quantidade-<?= $item['ID'] ?>" class="form-control d-none" value="<?= $item['quantidade_unitaria'] ?>">
                                         </td>
                                         <td>
                                             <span id="medida-<?= $item['ID'] ?>"><?= htmlspecialchars($item['medida']) ?></span>
