@@ -328,8 +328,8 @@ try {
                                     <th>Cadastrado Por</th>
                                     <th>Categoria</th>
                                     <th>Subcategoria</th>
-                                    <th>Medida</th>
                                     <th>Quantidade</th>
+                                    <th>Medida</th>
                                     <th>Ação</th>
                                 </tr>
                             </thead>
@@ -366,6 +366,10 @@ try {
                                             </select>
                                         </td>
                                         <td>
+                                            <span id="quantidade-<?= $item['ID'] ?>"><?= htmlspecialchars($item['quantidade_atual']) ?></span>
+                                            <input type="number" id="input-quantidade-<?= $item['ID'] ?>" class="form-control d-none" value="<?= $item['quantidade_atual'] ?>">
+                                        </td>
+                                        <td>
                                             <span id="medida-<?= $item['ID'] ?>"><?= htmlspecialchars($item['medida']) ?></span>
                                             <select id="input-medida-<?= $item['ID'] ?>" class="form-control d-none">
                                                 <?php foreach ($medidas as $medida): ?>
@@ -374,10 +378,6 @@ try {
                                                     </option>
                                                 <?php endforeach; ?>
                                             </select>
-                                        </td>
-                                        <td>
-                                            <span id="quantidade-<?= $item['ID'] ?>"><?= htmlspecialchars($item['quantidade_atual']) ?></span>
-                                            <input type="number" id="input-quantidade-<?= $item['ID'] ?>" class="form-control d-none" value="<?= $item['quantidade_atual'] ?>">
                                         </td>
                                         <td>
                                             <button class="btn btn-primary btn-sm" id="editar-<?= $item['ID'] ?>" onclick="editarItem(<?= $item['ID'] ?>)">Editar</button>
