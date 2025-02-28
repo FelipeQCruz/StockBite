@@ -92,7 +92,7 @@ try {
             (COALESCE(SUM(e.quantidade), 0) * COALESCE(SUM(i.quantidade_medida), 0)) AS quantidade_total_estoque,
             (COALESCE(SUM(e.quantidade), 0) * COALESCE(SUM(i.preco_unitario), 0)) AS valor_total_estoque
             FROM item i
-            LEFT JOIN fornecedor f ON i.id_fornecedor = f.ID
+            LEFT JOIN fornecedor f ON i.id_fornecedor = f.CNPJ
             LEFT JOIN categoria c ON i.id_categoria = c.ID
             LEFT JOIN categoria sc ON i.id_subcategoria = sc.ID
             LEFT JOIN unidades_medida um ON i.id_medida = um.ID

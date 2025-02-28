@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS item (
     nome VARCHAR(255) NOT NULL,
     preco_unitario FLOAT NOT NULL,
     quantidade_medida INT,
-    id_fornecedor INT,
+    id_fornecedor BIGINT,
     email_cadastro VARCHAR(255),
     id_categoria INT,
     id_subcategoria INT,
