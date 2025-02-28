@@ -13,28 +13,68 @@ try {
 
     if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["id"])) {
         $id_item = intval($_POST["id"]);
-        $nova_unidade = floatval($_POST["nova_unidade_total_estoque"]);
 
-        // Verifica se já existe um registro para o item no estoque
-        $stmt = $pdo->prepare("SELECT quantidade FROM estoque WHERE id_item = :id_item LIMIT 1");
+        // Verifica quais campos foram enviados na requisição POST
+        $nova_quantidade_total = isset($_POST["nova_quantidade_total_estoque"]) ? floatval($_POST["nova_quantidade_total_estoque"]) : NULL;
+        $nova_unidade = isset($_POST["nova_unidade_total_estoque"]) ? floatval($_POST["nova_unidade_total_estoque"]) : NULL;
+
+        // Buscar quantidade_medida do item
+        $stmt = $pdo->prepare("SELECT quantidade_medida FROM item WHERE ID = :id_item");
         $stmt->bindParam(":id_item", $id_item);
         $stmt->execute();
-        $estoque_existente = $stmt->fetch(PDO::FETCH_ASSOC);
+        $item = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($estoque_existente) {
-            // Atualiza a quantidade mantendo a data_hora_entrada original
-            $query = "UPDATE estoque SET quantidade = :nova_unidade WHERE id_item = :id_item";
+        if ($item && $item['quantidade_medida'] > 0) {
+            $quantidade_medida = floatval($item['quantidade_medida']);
+            try {
+                // Buscar a quantidade atual no estoque
+                $stmt = $pdo->prepare("SELECT quantidade FROM estoque WHERE id_item = :id_item");
+                $stmt->bindParam(":id_item", $id_item);
+                $stmt->execute();
+                $item = $stmt->fetch(PDO::FETCH_ASSOC);
+                $quantidade_atual = floatval($item['quantidade']);
+
+
+                // Verifica qual campo foi modificado e calcula a nova quantidade
+                if ($nova_unidade === $quantidade_atual) {
+                    $nova_quantidade = $nova_quantidade_total / $quantidade_medida;
+                } else {
+                    $nova_quantidade = $nova_unidade;
+                }
+            } catch (PDOException $e) {
+                if ($nova_quantidade_total > 0) {
+                    $nova_quantidade = $nova_quantidade_total / $quantidade_medida;
+                } elseif ($nova_unidade > 0) {
+                    $nova_quantidade = $nova_unidade;
+                } else {
+                    echo json_encode(["success" => false, "message" => "Nenhum valor foi alterado."]);
+                    exit();
+                }
+            }
+
+            // Verifica se o item já existe no estoque
+            $stmt = $pdo->prepare("SELECT quantidade FROM estoque WHERE id_item = :id_item LIMIT 1");
+            $stmt->bindParam(":id_item", $id_item);
+            $stmt->execute();
+            $estoque_existente = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($estoque_existente) {
+                // Atualiza a quantidade mantendo a data_hora_entrada original
+                $query = "UPDATE estoque SET quantidade = :nova_quantidade WHERE id_item = :id_item";
+            } else {
+                // Insere um novo registro no estoque
+                $query = "INSERT INTO estoque (id_item, data_hora_entrada, quantidade) VALUES (:id_item, NOW(), :nova_quantidade)";
+            }
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindParam(":id_item", $id_item);
+            $stmt->bindParam(":nova_quantidade", $nova_quantidade);
+            $stmt->execute();
+
+            echo json_encode(["success" => true, "message" => "Estoque atualizado com sucesso!"]);
         } else {
-            // Insere um novo registro no estoque
-            $query = "INSERT INTO estoque (id_item, data_hora_entrada, quantidade) VALUES (:id_item, NOW(), :nova_unidade)";
+            echo json_encode(["success" => false, "message" => "Erro: quantidade_medida inválida ou item não encontrado."]);
         }
-
-        $stmt = $pdo->prepare($query);
-        $stmt->bindParam(":id_item", $id_item);
-        $stmt->bindParam(":nova_unidade", $nova_unidade);
-        $stmt->execute();
-
-        echo json_encode(["success" => true, "message" => "Estoque atualizado com sucesso!"]);
         exit();
     }
 
@@ -300,8 +340,11 @@ try {
                                 <?php foreach ($items as $item): ?>
                                     <tr id="row-<?= $item['ID'] ?>">
                                         <td><?= htmlspecialchars($item['nome']) ?></td>
-                                        <td><?= htmlspecialchars($item['quantidade_total_estoque']) ?></td>
-                                        <td><?= htmlspecialchars($item['medida']) ?></td>                                        
+                                        <td>
+                                            <span id="quantidade_total_estoque-<?= $item['ID'] ?>"><?= number_format($item['quantidade_total_estoque'], 1, ',', '.') ?></span>
+                                            <input type="number" id="input-quantidade_estoque-<?= $item['ID'] ?>" class="form-control d-none" value="<?= $item['quantidade_total_estoque'] ?>" step="0.1">
+                                        </td>
+                                        <td><?= htmlspecialchars($item['medida']) ?></td>
                                         <td>
                                             <span id="unidades_estoque-<?= $item['ID'] ?>"><?= number_format($item['unidades_estoque'], 1, ',', '.') ?></span>
                                             <input type="number" id="input-unidades_estoque-<?= $item['ID'] ?>" class="form-control d-none" value="<?= $item['unidades_estoque'] ?>" step="0.1">
@@ -328,6 +371,7 @@ try {
                     let data = {
                         id: id,
                         nova_unidade_total_estoque: $("#input-unidades_estoque-" + id).val(),
+                        nova_quantidade_total_estoque: $("#input-quantidade_estoque-" + id).val(),
                     };
 
                     $.post("estoque.php", data, function(response) {
@@ -339,6 +383,7 @@ try {
                 function editarItem(id) {
                     $("#unidades_estoque-" + id).addClass("d-none");
                     $("#input-unidades_estoque-" + id).removeClass("d-none");
+                    $("#input-quantidade_estoque-" + id).removeClass("d-none");
 
                     $("#editar-" + id).addClass("d-none");
                     $("#salvar-" + id).removeClass("d-none");
@@ -360,6 +405,7 @@ try {
                     let data = {
                         id: id,
                         nova_unidade_total_estoque: $("#input-unidades_estoque-" + id).val(),
+                        nova_quantidade_total_estoque: $("#input-quantidade_estoque-" + id).val(),
                     };
 
                     console.log("Enviando dados:", data); // Verifique no console do navegador
@@ -370,7 +416,6 @@ try {
                         location.reload();
                     }, "json");
                 }
-                
             </script>
             <!-- Bootstrap core JavaScript-->
             <script src="../vendor/jquery/jquery.min.js"></script>
