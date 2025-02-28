@@ -80,7 +80,7 @@ ALTER TABLE categoria
 ADD CONSTRAINT fk_categoria_pai FOREIGN KEY (id_pai) REFERENCES categoria(ID) ON DELETE SET NULL;
  
 ALTER TABLE item
-ADD CONSTRAINT fk_item_fornecedor FOREIGN KEY (id_fornecedor) REFERENCES fornecedor(ID) ON DELETE SET NULL,
+ADD CONSTRAINT fk_item_fornecedor FOREIGN KEY (id_fornecedor) REFERENCES fornecedor(CNPJ) ON DELETE SET NULL,
 ADD CONSTRAINT fk_item_usuario FOREIGN KEY (id_categoria) REFERENCES categoria(ID) ON DELETE SET NULL,
 ADD CONSTRAINT fk_item_subcategoria FOREIGN KEY (id_subcategoria) REFERENCES categoria(ID) ON DELETE SET NULL,
 ADD CONSTRAINT fk_item_medida FOREIGN KEY (id_medida) REFERENCES unidades_medida(ID) ON DELETE SET NULL;
