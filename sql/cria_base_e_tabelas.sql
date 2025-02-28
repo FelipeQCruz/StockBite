@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS item (
     nome VARCHAR(255) NOT NULL,
     preco_unitario FLOAT NOT NULL,
     quantidade_medida INT,
-    id_fornecedor INT,
+    id_fornecedor BIGINT,
     email_cadastro VARCHAR(255),
     id_categoria INT,
     id_subcategoria INT,
@@ -80,7 +80,7 @@ ALTER TABLE categoria
 ADD CONSTRAINT fk_categoria_pai FOREIGN KEY (id_pai) REFERENCES categoria(ID) ON DELETE SET NULL;
  
 ALTER TABLE item
-ADD CONSTRAINT fk_item_fornecedor FOREIGN KEY (id_fornecedor) REFERENCES fornecedor(ID) ON DELETE SET NULL,
+ADD CONSTRAINT fk_item_fornecedor FOREIGN KEY (id_fornecedor) REFERENCES fornecedor(CNPJ) ON DELETE SET NULL,
 ADD CONSTRAINT fk_item_usuario FOREIGN KEY (id_categoria) REFERENCES categoria(ID) ON DELETE SET NULL,
 ADD CONSTRAINT fk_item_subcategoria FOREIGN KEY (id_subcategoria) REFERENCES categoria(ID) ON DELETE SET NULL,
 ADD CONSTRAINT fk_item_medida FOREIGN KEY (id_medida) REFERENCES unidades_medida(ID) ON DELETE SET NULL;
