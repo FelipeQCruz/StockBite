@@ -89,7 +89,7 @@ try {
             um.ID AS medida_id, um.nome AS medida, 
             COALESCE(SUM(i.quantidade_medida), 0) AS quantidade_atual
         FROM item i
-        LEFT JOIN fornecedor f ON i.id_fornecedor = f.ID
+        LEFT JOIN fornecedor f ON i.id_fornecedor = f.CNPJ
         LEFT JOIN usuario u ON i.email_cadastro = u.email
         LEFT JOIN categoria c ON i.id_categoria = c.ID
         LEFT JOIN categoria sc ON i.id_subcategoria = sc.ID
