@@ -55,13 +55,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $subcategoria = $_POST['subcategoria'];
     $medida = $_POST['medida'];
 
-
     if (empty($nome) || empty($preco_unitario) || empty($quantidade_medida) || empty($categoria) || empty($id_fornecedor) || empty($email_cadastro)) {
         $mensagem = "Todos os campos são obrigatórios!";
     } else {
         try {
-            $stmt = $pdo->prepare("INSERT INTO item (nome, preco_unitario, quantidade_medida, id_categoria, id_subcategoria, id_fornecedor, email_cadastro, id_medida) 
-                VALUES (:nome, :preco_unitario, :quantidade_medida, :id_categoria, :id_subcategoria, :id_fornecedor, :email_cadastro, :id_medida)");
+            // Inserindo o novo item
+            $stmt = $pdo->prepare("
+                INSERT INTO item (nome, preco_unitario, quantidade_medida, id_categoria, id_subcategoria, id_fornecedor, email_cadastro, id_medida) 
+                VALUES (:nome, :preco_unitario, :quantidade_medida, :id_categoria, :id_subcategoria, :id_fornecedor, :email_cadastro, :id_medida)
+            ");
 
             $stmt->bindParam(":nome", $nome);
             $stmt->bindParam(":preco_unitario", $preco_unitario);
@@ -73,11 +75,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->bindParam(":email_cadastro", $email_cadastro);
             $stmt->execute();
 
+            // Captura o ID do item recém-criado
+            $id_item = $pdo->lastInsertId();
 
-            // Exibir popup antes do redirecionamento
-            echo
-            "<script>
-                alert('Item cadastrado com sucesso!');
+            // Insere na tabela de estoque
+            $stmt = $pdo->prepare("
+                INSERT INTO estoque (id_item, data_hora_entrada, quantidade) 
+                VALUES (:id_item, NOW(), 0)
+            ");
+            $stmt->bindParam(":id_item", $id_item);
+            $stmt->execute();
+
+            echo "<script>
+                alert('Item cadastrado com sucesso e adicionado ao estoque!');
                 window.location.href = '" . $_SERVER['PHP_SELF'] . "';
             </script>";
             exit();
@@ -86,6 +96,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 }
+
 ?>
 
 <script>
