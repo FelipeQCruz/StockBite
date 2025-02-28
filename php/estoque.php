@@ -13,7 +13,7 @@ try {
 
     if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["id"])) {
         $id_item = intval($_POST["id"]);
-        $nova_quantidade = floatval($_POST["nova_quantidade_total_estoque"]);
+        $nova_unidade = floatval($_POST["nova_unidade_total_estoque"]);
 
         // Verifica se já existe um registro para o item no estoque
         $stmt = $pdo->prepare("SELECT quantidade FROM estoque WHERE id_item = :id_item LIMIT 1");
@@ -23,15 +23,15 @@ try {
 
         if ($estoque_existente) {
             // Atualiza a quantidade mantendo a data_hora_entrada original
-            $query = "UPDATE estoque SET quantidade = :nova_quantidade WHERE id_item = :id_item";
+            $query = "UPDATE estoque SET quantidade = :nova_unidade WHERE id_item = :id_item";
         } else {
             // Insere um novo registro no estoque
-            $query = "INSERT INTO estoque (id_item, data_hora_entrada, quantidade) VALUES (:id_item, NOW(), :nova_quantidade)";
+            $query = "INSERT INTO estoque (id_item, data_hora_entrada, quantidade) VALUES (:id_item, NOW(), :nova_unidade)";
         }
 
         $stmt = $pdo->prepare($query);
         $stmt->bindParam(":id_item", $id_item);
-        $stmt->bindParam(":nova_quantidade", $nova_quantidade);
+        $stmt->bindParam(":nova_unidade", $nova_unidade);
         $stmt->execute();
 
         echo json_encode(["success" => true, "message" => "Estoque atualizado com sucesso!"]);
@@ -300,13 +300,13 @@ try {
                                 <?php foreach ($items as $item): ?>
                                     <tr id="row-<?= $item['ID'] ?>">
                                         <td><?= htmlspecialchars($item['nome']) ?></td>
+                                        <td><?= htmlspecialchars($item['quantidade_total_estoque']) ?></td>
+                                        <td><?= htmlspecialchars($item['medida']) ?></td>                                        
                                         <td>
-                                            <span id="quantidade_total_estoque-<?= $item['ID'] ?>"><?= number_format($item['quantidade_total_estoque'], 1, ',', '.') ?></span>
-                                            <input type="number" id="input-quantidade_total_estoque-<?= $item['ID'] ?>" class="form-control d-none" value="<?= $item['quantidade_total_estoque'] ?>" step="0.1">
+                                            <span id="unidades_estoque-<?= $item['ID'] ?>"><?= number_format($item['unidades_estoque'], 1, ',', '.') ?></span>
+                                            <input type="number" id="input-unidades_estoque-<?= $item['ID'] ?>" class="form-control d-none" value="<?= $item['unidades_estoque'] ?>" step="0.1">
                                         </td>
-                                        <td><?= htmlspecialchars($item['medida']) ?></td>
-                                        <td><?= htmlspecialchars($item['unidades_estoque']) ?></td>
-                                        <td><span id="quantidade_total_estoque-<?= $item['ID'] ?>">R$ <?= number_format($item['valor_total_estoque'], 2, ',', '.') ?></span></td>
+                                        <td><span id="valor_total_estoque-<?= $item['ID'] ?>">R$ <?= number_format($item['valor_total_estoque'], 2, ',', '.') ?></span></td>
                                         <td><?= htmlspecialchars($item['fornecedor']) ?></td>
                                         <td><?= htmlspecialchars($item['categoria']) ?></td>
                                         <td><?= htmlspecialchars($item['subcategoria']) ?></td>
@@ -327,7 +327,7 @@ try {
                 function salvarAlteracoes(id) {
                     let data = {
                         id: id,
-                        nova_quantidade_total_estoque: $("#input-quantidade_total_estoque-" + id).val(),
+                        nova_unidade_total_estoque: $("#input-unidades_estoque-" + id).val(),
                     };
 
                     $.post("estoque.php", data, function(response) {
@@ -337,8 +337,8 @@ try {
                 }
 
                 function editarItem(id) {
-                    $("#quantidade_total_estoque-" + id).addClass("d-none");
-                    $("#input-quantidade_total_estoque-" + id).removeClass("d-none");
+                    $("#unidades_estoque-" + id).addClass("d-none");
+                    $("#input-unidades_estoque-" + id).removeClass("d-none");
 
                     $("#editar-" + id).addClass("d-none");
                     $("#salvar-" + id).removeClass("d-none");
@@ -359,7 +359,7 @@ try {
                 function salvarAlteracoes(id) {
                     let data = {
                         id: id,
-                        nova_quantidade_total_estoque: $("#input-quantidade_total_estoque-" + id).val(),
+                        nova_unidade_total_estoque: $("#input-unidades_estoque-" + id).val(),
                     };
 
                     console.log("Enviando dados:", data); // Verifique no console do navegador
