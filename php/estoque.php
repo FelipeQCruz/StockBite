@@ -382,6 +382,7 @@ try {
 
                 function editarItem(id) {
                     $("#unidades_estoque-" + id).addClass("d-none");
+                    $("#quantidade_total_estoque-" + id).addClass("d-none");
                     $("#input-unidades_estoque-" + id).removeClass("d-none");
                     $("#input-quantidade_estoque-" + id).removeClass("d-none");
 
