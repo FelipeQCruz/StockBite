@@ -2,6 +2,14 @@
 <html lang="en">
 
 <head>
+    <script>
+        fetch('session_data.php')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("user-name").innerText = data.email || "Não logado";
+            })
+            .catch(error => console.error('Erro ao obter usuário:', error));
+    </script>
 
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -29,7 +37,6 @@
 
         <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-
             <!-- Sidebar - Brand -->
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
                 <div class="sidebar-brand-icon rotate-n-15">
@@ -71,7 +78,7 @@
                     </div>
                 </div>
             </li>
-            
+
             <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
@@ -95,8 +102,7 @@
                     <i class="fas fa-box fa-sm fa-fw mr-2 text-gray-400"></i>
                     <span>Estoque</span>
                 </a>
-                <div id="collapseThree" class="collapse" aria-labelledby="headingThree"
-                    data-parent="#accordionSidebar">
+                <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Opções:</h6>
                         <a class="collapse-item" href="php.html">Visualizar</a>
@@ -111,13 +117,12 @@
                     <i class="fas fa-box fa-sm fa-fw mr-2 text-gray-400"></i>
                     <span>Usuários</span>
                 </a>
-                <div id="collapseFour" class="collapse" aria-labelledby="headingFour"
-                data-parent="#accordionSidebar">
-                <div class="bg-white py-2 collapse-inner rounded">
-                    <h6 class="collapse-header">Opções:</h6>
-                    <a class="collapse-item" href="php/visualiza_usuarios.php">Visualizar</a>
-                    <a class="collapse-item" href="php/cadastro_usuarios.php">Cadastrar</a>
-                </div>
+                <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Opções:</h6>
+                        <a class="collapse-item" href="php/visualiza_usuarios.php">Visualizar</a>
+                        <a class="collapse-item" href="php/cadastro_usuarios.php">Cadastrar</a>
+                    </div>
                 </div>
             </li>
 
@@ -128,8 +133,7 @@
                     <i class="fas fa-box fa-sm fa-fw mr-2 text-gray-400"></i>
                     <span>Geral</span>
                 </a>
-                <div id="collapseFive" class="collapse" aria-labelledby="headingFive"
-                    data-parent="#accordionSidebar">
+                <div id="collapseFive" class="collapse" aria-labelledby="headingFive" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Categorias:</h6>
                         <a class="collapse-item" href="php/adiciona_categorias.php">Adicionar</a>
@@ -320,8 +324,7 @@
                                 </h6>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_1.svg"
-                                            alt="...">
+                                        <img class="rounded-circle" src="img/undraw_profile_1.svg" alt="...">
                                         <div class="status-indicator bg-success"></div>
                                     </div>
                                     <div class="font-weight-bold">
@@ -332,8 +335,7 @@
                                 </a>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_2.svg"
-                                            alt="...">
+                                        <img class="rounded-circle" src="img/undraw_profile_2.svg" alt="...">
                                         <div class="status-indicator"></div>
                                     </div>
                                     <div>
@@ -344,8 +346,7 @@
                                 </a>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="dropdown-list-image mr-3">
-                                        <img class="rounded-circle" src="img/undraw_profile_3.svg"
-                                            alt="...">
+                                        <img class="rounded-circle" src="img/undraw_profile_3.svg" alt="...">
                                         <div class="status-indicator bg-warning"></div>
                                     </div>
                                     <div>
@@ -376,9 +377,7 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
-                                <img class="img-profile rounded-circle"
-                                    src="img/undraw_profile.svg">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small" id="user-name">Carregando...</span>
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
