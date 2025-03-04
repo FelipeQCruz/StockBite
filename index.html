@@ -4,17 +4,24 @@
 <head>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            fetch('session_data.php')
+            fetch('php/session_data.php', {
+                method: 'GET',
+                cache: 'no-cache'  // Evita armazenar resposta antiga do cache
+            })
                 .then(response => response.json())
                 .then(data => {
-                    const userElement = document.getElementById("user-name");
-                    if (userElement) {
-                        userElement.innerText = data.nome || "Usuário";
+                    console.log("Resposta do servidor:", data); // Depuração
+
+                    if (data.status === "logged_in") {
+                        document.getElementById("user-name").innerText = data.nome;
                     } else {
-                        console.error("Elemento #user-name não encontrado.");
+                        window.location.href = "login.html"; // Redireciona se não estiver logado
                     }
                 })
-                .catch(error => console.error('Erro ao obter usuário:', error));
+                .catch(error => {
+                    console.error('Erro ao obter usuário:', error);
+                    window.location.href = "login.html"; // Redireciona mesmo em caso de erro
+                });
         });
     </script>
 
@@ -384,7 +391,8 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small" id="user-name">Carregando...</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"
+                                    id="user-name">Carregando...</span>
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -775,15 +783,15 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Deseja mesmo sair?</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+                <div class="modal-body">Selecione "Logout" Pressione logout para encerrar sua sessão.</div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="login.html">Logout</a>
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
+                    <a class="btn btn-primary" id="logout-btn" href="#">Logout</a>
                 </div>
             </div>
         </div>
@@ -807,5 +815,19 @@
     <script src="js/demo/chart-pie-demo.js"></script>
 
 </body>
+
+<script>
+    document.getElementById("logout-btn").addEventListener("click", function (event) {
+        event.preventDefault(); // Impede o comportamento padrão do link
+    
+        fetch("php/logout.php", {
+            method: "GET",
+            cache: "no-cache"
+        }).then(() => {
+            window.location.href = "login.html"; // Redireciona após logout
+        }).catch(error => console.error("Erro no logout:", error));
+    });
+    </script>
+    
 
 </html>
