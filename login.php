@@ -20,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $senha = trim($_POST['senha']);
 
     if (!empty($email) && !empty($senha)) {
-        $sql = "SELECT email, senha FROM usuario WHERE email = ?";
+        $sql = "SELECT email, senha, nome FROM usuario WHERE email = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $email);
         $stmt->execute();
@@ -31,18 +31,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             if (password_verify($senha, $user['senha'])) {
                 $_SESSION['email'] = $user['email'];
+                $_SESSION['nome'] = $user['nome']; // Armazena o nome na sessão
                 header("Location: index.html");
                 exit();
             } else {
-                $erro = "Senha incorreta!";
+                echo "Senha incorreta!";
             }
         } else {
-            $erro = "Usuário não encontrado!";
+            echo "Usuário não encontrado!";
         }
 
         $stmt->close();
     } else {
-        $erro = "Preencha todos os campos!";
+        echo "Preencha todos os campos!";
     }
 }
 
