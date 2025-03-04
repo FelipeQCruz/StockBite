@@ -53,6 +53,3 @@ try {
 $stmt->close();
 $conn->close();
 ?>
-
-tem menu de contexto
-

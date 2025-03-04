@@ -7,13 +7,10 @@ $dbUsername = "root";
 $dbPassword = "27H09g94B*";
 $dbName = "stockbite";
 
-try 
-{
+try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbName;charset=utf8", $dbUsername, $dbPassword);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} 
-catch (PDOException $e)
- {
+} catch (PDOException $e) {
     die("Erro ao conectar ao banco de dados: " . $e->getMessage());
 }
 
@@ -23,8 +20,7 @@ if ($conn->connect_error) {
 }
 
 // Processamento do formulário
-if ($_SERVER["REQUEST_METHOD"] == "POST") 
-{
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $empresa = $_POST['empresa'];
     $CNPJ = $_POST['CNPJ'];
     $razao_social = $_POST['razao_social'];
@@ -32,14 +28,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     $telefone = $_POST['telefone'];
     $email = $_POST['email'];
 
-    if (empty($empresa) || empty($CNPJ) || empty($razao_social) || empty($nome_vendedor) || empty($telefone) || empty($email)) 
-    {
+    if (empty($empresa) || empty($CNPJ) || empty($razao_social) || empty($nome_vendedor) || empty($telefone) || empty($email)) {
         $mensagem = "Todos os campos são obrigatórios!";
-    } 
-    else 
-    {
-        try 
-        {
+    } else {
+        try {
             $stmt = $pdo->prepare("INSERT INTO fornecedor (empresa, CNPJ, razao_social, nome_vendedor, telefone, email) 
                 VALUES (:empresa, :CNPJ, :razao_social, :nome_vendedor, :telefone, :email)");
 
@@ -51,17 +43,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
             $stmt->bindParam(":email", $email);
             $stmt->execute();
 
-            
+
             // Exibir popup antes do redirecionamento
-            echo 
-                "<script>
+            echo
+            "<script>
                 alert('fornecedor cadastrado com sucesso!');
                 window.location.href = '" . $_SERVER['PHP_SELF'] . "';
             </script>";
             exit();
-        }
-        catch (PDOException $e) 
-        {
+        } catch (PDOException $e) {
             $mensagem = "Erro ao cadastrar fornecedor: " . $e->getMessage();
         }
     }
@@ -70,6 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -77,6 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/sb-admin-2.min.css" rel="stylesheet">
 </head>
+
 <body id="page-top">
     <div id="wrapper">
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion">
@@ -103,7 +95,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
                 </nav>
                 <div class="container-fluid">
                     <h1 class="h3 mb-4 text-gray-800">Cadastro de Fornecedor</h1>
-                    <?php if (isset($mensagem)) { echo "<div class='alert alert-info'>$mensagem</div>"; } ?>
+                    <?php if (isset($mensagem)) {
+                        echo "<div class='alert alert-info'>$mensagem</div>";
+                    } ?>
                     <form action="cadastro_fornecedor.php" method="POST">
                         <div class="form-group">
                             <label for="empresa">Empresa</label>
@@ -129,9 +123,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
                             <label for="email">E-mail vendedor</label>
                             <input type="email" class="form-control" id="email" name="email" required>
                         </div>
-                        <button type="submit" class="btn btn-primary">Cadastrar Fornecedor</button>                   
+                        <button type="submit" class="btn btn-primary">Cadastrar Fornecedor</button>
 
-</form>
+                    </form>
                 </div>
             </div>
             <footer class="sticky-footer bg-white">
@@ -147,4 +141,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="js/sb-admin-2.min.js"></script>
 </body>
+
 </html>
