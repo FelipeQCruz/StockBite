@@ -15,5 +15,8 @@ if (!isset($_SESSION['email'])) {
 }
 
 // Se estiver logado, retorna os dados do usuário
-echo json_encode(["status" => "logged_in", "nome" => $_SESSION['nome']]);
-?>
+echo json_encode([
+    "status" => "logged_in",
+    "nome" => $_SESSION['nome'],
+    "email" => $_SESSION['email']
+]);
