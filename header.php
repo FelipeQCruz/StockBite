@@ -1,3 +1,8 @@
+<?php
+$pageTitle = "Dashboard"; // Define o título da página
+include 'php/conexao.php';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
