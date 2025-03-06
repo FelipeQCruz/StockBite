@@ -19,6 +19,14 @@ include "header.php"
         </div>
         <div class="card-body">
             <div class="table-responsive w-100">
+                <!-- Card de Faturamento -->
+                <div class="card shadow mb-4">
+                    <div class="card-body">
+                        <h5 class="m-0 font-weight-bold text-primary">Faturamento de <?= $data_faturamento ?>:
+                            <span class="text-success">R$ <?= number_format($faturamento_atual, 2, ',', '.') ?></span>
+                        </h5>
+                    </div>
+                </div>
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>

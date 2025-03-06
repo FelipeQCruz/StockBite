@@ -100,3 +100,22 @@ try {
 } catch (PDOException $e) {
     die("Erro ao conectar ao banco de dados: " . $e->getMessage());
 }
+
+// Consulta para obter o faturamento atual (soma dos valores)
+$sql = "SELECT sum(valor) AS faturamento_atual , data_faturamento
+        FROM faturamento 
+        WHERE data_faturamento = (SELECT MAX(data_faturamento) FROM faturamento)
+        group by data_faturamento";
+$result = $conn->query($sql);
+$row = $result->fetch_assoc();
+
+// Se houver resultado, armazena o faturamento, senão define como 0
+$faturamento_atual = $row['faturamento_atual'] ?? 0;
+$data_faturamento = $row['data_faturamento'] ?? null;
+
+// Converte a data para o formato brasileiro (dd/mm/yyyy)
+if ($data_faturamento) {
+    $data_faturamento = date("d/m/Y", strtotime($data_faturamento));
+}
+
+?>
