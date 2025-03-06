@@ -341,3 +341,8 @@ VALUES
     ('Quilograma'),
     ('Litro'),
     ('Unidade');
+
+INSERT INTO
+    restaurante (cnpj, nome, razao_social)
+VALUES
+    (43447633867, 'Felipe QC', 'FQC');

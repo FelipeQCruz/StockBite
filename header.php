@@ -1,6 +1,7 @@
 <?php
 $pageTitle = "Dashboard"; // Define o título da página
 include 'php/conexao.php';
+include 'php/regras.php';
 ?>
 
 <!DOCTYPE html>

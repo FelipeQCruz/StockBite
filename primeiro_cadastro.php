@@ -1,6 +1,7 @@
 <?php
+include "php/conexao.php";
+include "header.php";
 include "php/cadastro_usuarios.php";
-include "header.php"
 ?>
 
 <!DOCTYPE html>
@@ -9,7 +10,7 @@ include "header.php"
 <body id="page-top">
 
     <div class="container-fluid">
-        <h1 class="h3 mb-4 text-gray-800">Cadastro de usuario</h1>
+        <h1 class="h3 mb-4 text-gray-800">Primeiro cadastro de usuario</h1>
         <?php if (isset($mensagem)) {
             echo "<div class='alert alert-info'>$mensagem</div>";
         } ?>
@@ -26,13 +27,10 @@ include "header.php"
                 <label for="nome">Nome</label>
                 <input type="nome" class="form-control" id="nome" name="nome" required>
             </div>
-            <label for="perfil">Perfil:</label>
-            <select id="perfil" name="perfil" class="form-control" required>
-                <option value="">Selecione um perfil</option>
-                <?php foreach ($perfis as $id => $nome) { ?>
-                    <option value="<?= $id ?>"><?= $nome ?></option>
-                <?php } ?>
-            </select>
+            <div class="form-group">
+                <label for="perfil">Perfil</label>
+                <input type="text" class="form-control" id="perfil" name="perfil"  value="Administrador"readonly required>
+            </div>
             <p></p>
             <div class="form-group">
                 <label for="email">E-mail</label>
