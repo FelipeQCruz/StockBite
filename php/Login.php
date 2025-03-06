@@ -1,41 +1,46 @@
 <?php
-session_start();
+session_start(); // Deve ser a primeira linha
 
-$host = "localhost";
-$dbUsername = "root";
-$dbPassword = "27H09g94B*";
-$dbName = "stockbite";
+include "conexao.php";
+// Criando conexão
+$conn = new mysqli($host, $dbUsername, $dbPassword, $dbName);
 
+// Verificando erro na conexão
+if ($conn->connect_error) {
+    die("Falha na conexão: " . $conn->connect_error);
+}
 
-//concetar o banco de dados usando PDO
-try
-{
-    $pdo = new PDO("mysql:host=$host;dbname=$dbName;charset=utf8", $dbUsername, $dbPassword);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch(PDOException $e) {
-        die("Erro ao conectar ao banco de dados:" . $e->getMessage());
-    }
-//Verificando se os dados foram enviados pelo formulario
-if($_SERVER["REQUEST_METHOD"]=="POST")
-{
-    $email = $_POST['email'];
-    $senha = $_POST['senha'];
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $email = trim($_POST['email']);
+    $senha = trim($_POST['senha']);
 
-    //consulta para buscar o usuario pelo email
-    $stmt =$pdo->prepare("SELECT id, senha FROM usuario WHERE email = :email ");
-    $stmt->bindParam(":email", $email);
-    $stmt->execute();
+    if (!empty($email) && !empty($senha)) {
+        $sql = "SELECT email, senha, nome FROM usuario WHERE email = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if($user && password_verify($senha, $user['senha']))
-    {
-        $_SESSION['user_id'] = $user['id']; // armazena o id do usuario na sessão
-        header("Location: painel.php"); //redireciona para o painel apos o login
-        exit();
-    }
-    else
-    {
-        echo "Email ou senha incorretos!";
+        if ($result->num_rows > 0) {
+            $user = $result->fetch_assoc();
+
+            if (password_verify($senha, $user['senha'])) {
+                $_SESSION['email'] = $user['email'];
+                $_SESSION['nome'] = $user['nome']; // Armazena o nome na sessão
+                header("Location: ../index.php");
+                exit();
+            } else {
+                echo "Senha incorreta!";
+            }
+        } else {
+            echo "Usuário não encontrado!";
+        }
+
+        $stmt->close();
+    } else {
+        echo "Preencha todos os campos!";
     }
 }
+
+$conn->close();
+?>
