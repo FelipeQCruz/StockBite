@@ -70,8 +70,13 @@ unset($_SESSION['mensagem']); // Remove a mensagem para evitar reexibição
             </div>
 
             <div class="form-group">
-                <label for="id_fornecedor">ID do Fornecedor</label>
-                <input type="text" class="form-control" id="id_fornecedor" name="id_fornecedor" required>
+                <label for="fornecedor">Fornecedor</label>
+                <select id="fornecedor" name="fornecedor" class="form-control" required>
+                    <option value="">Selecione um fornecedor</option>
+                    <?php foreach ($fornecedores as $fornecedor) : ?>
+                        <option value="<?= $fornecedor['ID'] ?>"><?= $fornecedor['empresa'] ?></option>
+                    <?php endforeach; ?>
+                </select>
             </div>
 
             <div class="form-group">

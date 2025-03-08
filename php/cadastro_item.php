@@ -37,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $categoria = $_POST['categoria'];
     $subcategoria = $_POST['subcategoria'];
     $medida = $_POST['medida'];
-    $id_fornecedor = $_POST['id_fornecedor'];
+    $id_fornecedor = $_POST['fornecedor'];
     $email = $_POST['email'];
 
     if (empty($nome) || empty($preco_unitario) || empty($quantidade_medida) || empty($categoria) || empty($id_fornecedor) || empty($email)) {
@@ -65,4 +65,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     header("Location: ../cadastro_item.php");
     exit();
+}
+
+// Fetch suppliers from the database
+$fornecedores = [];
+$query = "SELECT cnpj AS ID, empresa FROM fornecedor";
+$result = mysqli_query($conn, $query);
+
+while ($row = mysqli_fetch_assoc($result)) {
+    $fornecedores[] = $row;
 }

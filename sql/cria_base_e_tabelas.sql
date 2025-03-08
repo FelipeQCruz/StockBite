@@ -59,10 +59,9 @@ CREATE TABLE IF NOT EXISTS estoque (
 );
 
 CREATE TABLE IF NOT EXISTS validade (
-    ID_item AUTO_INCREMENT PRIMARY KEY AUTO_INCREMENT,
+    ID_item INT NOT NULL,
     validade DATE NOT NULL,
-    quantidade FLOAT NOT NULL,
-    PRIMARY KEY (ID_item, validade)
+    quantidade FLOAT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS usuarios_restaurantes (
@@ -90,7 +89,7 @@ SET
     NULL;
 
 ALTER TABLE
-    faruramento
+    faturamento
 ADD
     CONSTRAINT fk_restaurante_faturamento FOREIGN KEY (cnpj) REFERENCES restaurante(cnpj) ON DELETE
 SET
